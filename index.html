@@ -1,39 +1,119 @@
-<!DOCTYPE html>
-<html lang="km">
+<!doctype html>
+<html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta charset="utf-8" />
   <title>TBK-Police Files</title>
-  <link rel="icon" href="tbk.png">
-  <link rel="stylesheet" href="styles.css">
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <link rel="icon" href="tbk.png" />
+  <link rel="stylesheet" href="styles.css" />
 </head>
-<body class="light-mode">
-
-  <header>
-    <img src="tbk.png" alt="Logo" style="height:60px;">
-    <h1>TBK-Police Files</h1>
+<body>
+  <header class="topbar">
+    <img src="tbk.png" alt="TBK" class="logo" />
+    <h1 id="app-title">TBK-Police Files</h1>
+    <div class="controls">
+      <select id="lang-switch" aria-label="language">
+        <option value="en">English</option>
+        <option value="km">ខ្មែរ</option>
+      </select>
+      <button id="theme-toggle">🌙</button>
+    </div>
   </header>
 
-  <main class="login-container">
-    <h2>Login</h2>
-    <input type="email" id="email" placeholder="Email">
-    <input type="password" id="password" placeholder="Password">
-    <button id="loginBtn">Login</button>
-    <p id="errorMsg" style="color:red; margin-top:10px;"></p>
+  <main id="app">
+    <section id="auth-section">
+      <div id="signed-out">
+        <h2 id="auth-title">Login</h2>
+        <input id="email" placeholder="Email" />
+        <input id="password" placeholder="Password" type="password" />
+        <button id="login-btn">Login</button>
+      </div>
+      <div id="signed-in" style="display:none;">
+        <div id="user-info">
+          <span id="welcome"></span>
+          <button id="logout-btn">Logout</button>
+        </div>
+      </div>
+    </section>
+
+    <nav id="main-nav" style="display:none;">
+      <button data-view="submit">1. ដាក់ស្នើសុំ / Submit</button>
+      <button data-view="track">2. តាមដាន / Track</button>
+      <button data-view="aggregate">3. ទាញយកទិន្នន័យ / Aggregate</button>
+      <button data-view="contact">4. ទំនាក់ទំនង / Contact</button>
+      <button data-view="admin" id="admin-btn" style="display:none;">Admin</button>
+    </nav>
+
+    <section id="view-area">
+      <div id="view-submit" class="view" style="display:none;">
+        <h3>Submit Document / ដាក់ឯកសារ</h3>
+        <input id="title" placeholder="Title (ចំណងជើង)" />
+        <textarea id="desc" placeholder="Description (ពណ៌នា)"></textarea>
+        <input id="file-input" type="file" />
+        <button id="upload-btn">Upload</button>
+        <div id="upload-status"></div>
+      </div>
+
+      <div id="view-track" class="view" style="display:none;">
+        <h3>Your Submissions</h3>
+        <div id="my-submissions"></div>
+      </div>
+
+      <div id="view-aggregate" class="view" style="display:none;">
+        <h3>Download Aggregated Data</h3>
+        <button id="download-csv">Download CSV of metadata</button>
+        <div id="agg-list"></div>
+      </div>
+
+      <div id="view-contact" class="view" style="display:none;">
+        <h3>Contact</h3>
+        <p>Click to show phone / telegram</p>
+        <button id="show-contact">Show Phone & Telegram</button>
+        <div id="contact-details" style="display:none;">
+          <p>Phone: <a href="tel:+85512345678">+855 12 345 678</a></p>
+          <p>Telegram: <a target="_blank" id="telegram-link" href="https://t.me/domunlocked">Open Telegram</a></p>
+        </div>
+      </div>
+
+      <div id="view-admin" class="view" style="display:none;">
+        <h3>Admin Dashboard</h3>
+        <div>
+          <label>Filter by status:
+            <select id="filter-status">
+              <option value="all">All</option>
+              <option value="pending">Pending</option>
+              <option value="done">Done</option>
+            </select>
+          </label>
+          <label>Sort by:
+            <select id="sort-by">
+              <option value="date_desc">Date desc</option>
+              <option value="date_asc">Date asc</option>
+              <option value="title">Title</option>
+              <option value="user">Username</option>
+            </select>
+          </label>
+        </div>
+        <div id="admin-list"></div>
+      </div>
+    </section>
   </main>
 
-  <footer>
-    <p>© 2025 TBK Police Department</p>
-  </footer>
+  <!-- Firebase compat SDKs (simple for GitHub Pages usage) -->
+  <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-auth-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-storage-compat.js"></script>
 
-  <!-- Firebase SDK -->
-  <script src="https://www.gstatic.com/firebasejs/10.13.0/firebase-app.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/10.13.0/firebase-auth.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/10.13.0/firebase-firestore.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/10.13.0/firebase-storage.js"></script>
+  <script>
+    // Firebase config (provided)
+    const firebaseConfig = {apiKey: "AIzaSyD3kI3RlOIeGd4r5evCwjpzDe-47utaWco", authDomain: "pl-tbk-file.firebaseapp.com", projectId: "pl-tbk-file", storageBucket: "pl-tbk-file.firebasestorage.app", messagingSenderId: "392294785491", appId: "1:392294785491:web:479dddf03d5ded40bf4f26"};
+  </script>
+  <script>
+    // initialize (compat)
+    firebase.initializeApp({apiKey: "AIzaSyD3kI3RlOIeGd4r5evCwjpzDe-47utaWco", authDomain: "pl-tbk-file.firebaseapp.com", projectId: "pl-tbk-file", storageBucket: "pl-tbk-file.firebasestorage.app", messagingSenderId: "392294785491", appId: "1:392294785491:web:479dddf03d5ded40bf4f26"});
+  </script>
 
-  <!-- App logic -->
   <script src="app.js"></script>
-
 </body>
 </html>
